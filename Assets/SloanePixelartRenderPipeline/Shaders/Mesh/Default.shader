@@ -2,18 +2,22 @@ Shader "Sloane/Pixelart/Default"
 {
     Properties
     {
-        _BaseMap("BaseMap", 2D) = "white" {}
+        _BaseMap("Base Map", 2D) = "white" {}
         [Gamma] _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
+        _BumpMap("Normal Map", 2D) = "bump" {}
+        _BumpScale("Normal Scale", Range(0.0, 1.0)) = 1.0
         _DiffuseDitherPalette("Diffuse Dither Palette", 2D) = "gray" {}
         _DiffuseDitherStrength("Diffuse Dither Strength", Range(0.0, 1.0)) = 0.0
         _PriorityMap("PriorityMap", 2D) = "white" {}
         _Priority("Priority", Range(0.0, 1.0)) = 1
-        _LocalUnitScale("Local Unit Scale", Int) = 1
+        _LocalUnitScale("Local Unit Scale", Float) = 1
         _Smoothness("Smoothness", Range(0.0, 1.0)) = 0.5
         _Metallic("Metallic", Range(0.0, 1.0)) = 0.1
-        _NormalBlendScale("Normal Blend Scale", Range(0.0, 1.0)) = 0.0
         _NormalEdgeThreshold("Normal Edge Threshold", Range(0.0, 1.0)) = 1.0
-        _MainLightLevel("Main Light Level", Int) = 2
+        _MainLightLevel("Main Light Level", Float) = 2
+        _AAScale("AA Scale", Range(1.0, 255.0)) = 1.0
+        _EdgeLevel("Edge Level", Float) = -1.0
+        _ApplyOutline("Apply Outline", Integer) = 1
         _RimLightColor("Rim Light Color", Color) = (1.0, 1.0, 1.0, 0.0)
     }
     SubShader
@@ -38,7 +42,7 @@ Shader "Sloane/Pixelart/Default"
             HLSLPROGRAM
 
             #pragma multi_compile_instancing
-            #include "Includes/Passes/DefaultPass.hlsl"
+            #include "../Includes/Passes/DefaultPass.hlsl"
 
             #pragma vertex PixelartBaseVert
             #pragma fragment DefaultFrag
@@ -111,7 +115,7 @@ Shader "Sloane/Pixelart/Default"
             HLSLPROGRAM
 
             #pragma multi_compile_instancing
-            #include "Includes/Passes/ShadowPass.hlsl"
+            #include "../Includes/Passes/ShadowPass.hlsl"
 
             #pragma vertex ShadowVert
             #pragma fragment ShadowFrag

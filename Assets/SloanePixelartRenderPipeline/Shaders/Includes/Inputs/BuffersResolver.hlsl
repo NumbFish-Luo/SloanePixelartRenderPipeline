@@ -17,8 +17,8 @@ clip(albedo.a - 0.0001);
 #define GET_CONNECTIVITY \
 float4 connectInfo = tex2D(_ConnectivityResultBuffer, uv); \
 int connectData; \
-float fakeFloot = 0.0; \
-UnpackFloatInt8bit(connectInfo.a, 256.0, fakeFloot, connectData); \
+float connectFakeFloot = 0.0; \
+UnpackFloatInt8bit(connectInfo.a, 256.0, connectFakeFloot, connectData); \
 \
 int connectedToRight = (connectData & (1 << 7)) > 0 ? 1 : 0; \
 int connectedToLeft = (connectData & (1 << 6)) > 0 ? 1 : 0; \
@@ -31,22 +31,29 @@ int closerThanUp = (connectData & (1 << 1)) > 0 ? 1 : 0; \
 int closerThanDown = (connectData & (1 << 0)) > 0 ? 1 : 0;
 
 
-#define GET_PROP \
+#define GET_PALETTE_PROP \
 float4 paletteProp = tex2D(_PalettePropertyBuffer, uv); \
+int paletteData; \
+float paletteFakeFloot = 0.0; \
+UnpackFloatInt8bit(paletteProp.a, 256.0, paletteFakeFloot, paletteData); \
+int applyOutline = (paletteData & (1 << 7)) > 0 ? 1 : 0; \
+
+#define GET_SHAPE_PROP \
 float4 shapeProp = tex2D(_ShapePropertyBuffer, uv); \
-float4 physicalProp = tex2D(_PhysicalPropertyBuffer, uv);\
-float4 rimLightProp = tex2D(_RimLightPropertyBuffer, uv);
+
+#define GET_PHYSICAL_PROP \
+float4 physicalProp = tex2D(_PhysicalPropertyBuffer, uv); \
+
+#define GET_RIMLIGHT_PROP \
+float4 rimLightProp = tex2D(_RimLightPropertyBuffer, uv); \
 
 #define GET_LIGHTMAP_UV \
 float4 UVInfo = tex2D(_LightmapUVBuffer, uv); \
 float2 staticLightmapUV = UVInfo.xy; \
 float2 dynamicLightmapUV = UVInfo.zw; \
 
-#define GET_NORMAL \
-float3 normalWS = tex2D(_NormalBuffer, uv).xyz; \
-float3 blendNormalWS = normalWS; \
-if(connectedToRight > 0) blendNormalWS += tex2D(_NormalBuffer, uv + float2(_ScreenParams.z - 1.0, 0.0)).xyz; \
-if(connectedToLeft > 0) blendNormalWS += tex2D(_NormalBuffer, uv - float2(_ScreenParams.z - 1.0, 0.0)).xyz; \
-if(connectedToUp > 0) blendNormalWS += tex2D(_NormalBuffer, uv + float2(0.0, _ScreenParams.w - 1.0)).xyz; \
-if(connectedToDown > 0) blendNormalWS += tex2D(_NormalBuffer, uv - float2(0.0, _ScreenParams.w - 1.0)).xyz; \
-normalWS = normalize(lerp(normalWS, normalize(blendNormalWS), shapeProp.g));
+#define GET_NORMAL0 \
+float3 rawNormalWS = tex2D(_Normal0Buffer, uv).xyz;
+
+#define GET_NORMAL1 \
+float3 normalWS = tex2D(_Normal1Buffer, uv).xyz;

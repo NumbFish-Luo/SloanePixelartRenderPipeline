@@ -8,7 +8,9 @@
 #include "../Blit.hlsl"
 
 sampler2D _MainTex;
+sampler2D _DiffuseBuffer;
 sampler2D _ConnectivityResultBuffer;
+sampler2D _PalettePropertyBuffer;
 float4 _OutlineColor;
 
 float3 ApplyOutline(float2 uv)
@@ -16,7 +18,7 @@ float3 ApplyOutline(float2 uv)
 #ifdef _OUTLINE_SOLID_COLOR
     return _OutlineColor.rgb;
 #else
-    float3 baseColor = tex2D(_MainTex, uv).rgb;
+    float3 baseColor = tex2D(_DiffuseBuffer, uv).rgb;
     return baseColor * _OutlineColor.rgb;
 #endif
 }
@@ -28,30 +30,53 @@ half4 OutlineFragment(Varyings input) : SV_Target
 
     float3 outputColor = float3(0.0, 0.0, 0.0);
     float weight = 0.0;
+    float2 uvCache = uv;
 
     if(connectedToRight < 1 && closerThanRight < 1)
     {
-        outputColor += ApplyOutline(uv + float2(_ScreenParams.z - 1.0, 0.0));
-        weight += 1.0;
+        uv = uvCache + float2(_ScreenParams.z - 1.0, 0.0);
+        GET_PALETTE_PROP
+        if(applyOutline > 0)
+        {
+            outputColor += ApplyOutline(uv);
+            weight += 1.0;
+        }
     }
-
+    
     if(connectedToLeft < 1 && closerThanLeft < 1)
     {
-        outputColor += ApplyOutline(uv - float2(_ScreenParams.z - 1.0, 0.0));
-        weight += 1.0;
+        uv = uvCache - float2(_ScreenParams.z - 1.0, 0.0);
+        GET_PALETTE_PROP
+        if(applyOutline > 0)
+        {
+            outputColor += ApplyOutline(uv);
+            weight += 1.0;
+        }
     }
 
     if(connectedToUp < 1 && closerThanUp < 1)
     {
-        outputColor += ApplyOutline(uv + float2(0.0, _ScreenParams.w - 1.0));
-        weight += 1.0;
+        uv = uvCache + float2(0.0, _ScreenParams.w - 1.0);
+        GET_PALETTE_PROP
+        if(applyOutline > 0)
+        {
+            outputColor += ApplyOutline(uv);
+            weight += 1.0;
+        }
     }
 
     if(connectedToDown < 1 && closerThanDown < 1)
     {
-        outputColor += ApplyOutline(uv - float2(0.0, _ScreenParams.w - 1.0));
-        weight += 1.0;
+        uv = uvCache - float2(0.0, _ScreenParams.w - 1.0);
+        GET_PALETTE_PROP
+        if(applyOutline > 0)
+        {
+            outputColor += ApplyOutline(uv);
+            weight += 1.0;
+        }
     }
+
+    uv = uvCache;
 
     if(weight > 0) outputColor /= weight;
     else outputColor = tex2D(_MainTex, uv).rgb;
